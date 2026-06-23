@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The SkyLine Township</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<nav class="navbar" id="navbar">
+    <a href="index.html" class="navbar-brand">
+        <span class="brand-name">The SkyLine Township</span>
+        <span class="brand-tagline">Luxury Living Redefined</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <ul class="navbar-links" id="navLinks">
+        <li><a href="#highlights">Highlights</a></li>
+        <li><a href="#amenities">Amenities</a></li>
+        <li><a href="tour.html">Tour</a></li>
+        <li><a href="rules.html">Rules</a></li>
+        <li><a href="login.html" class="navbar-cta">Login</a></li>
+    </ul>
+</nav>
+
+<div class="hero">
+
+    <div class="hero-content">
+        <span class="hero-badge">Premium Residential Township</span>
+        <div class="hero-divider"></div>
+        <h1>THE <span class="accent">SKYLINE</span> TOWNSHIP</h1>
+        <p>
+            Where Luxury Meets Comfort,
+            Community and Sustainability
+        </p>
+        <div class="hero-buttons">
+            <button onclick="window.location.href='login.html'">
+                Resident / Admin Login
+            </button>
+            <button class="btn-outline" onclick="window.location.href='tour.html'">
+                Explore Township
+            </button>
+        </div>
+    </div>
+
+    <div class="hero-scroll">
+        <span class="scroll-line"></span>
+        Discover
+    </div>
+
+</div>
+
+<section id="highlights">
+
+    <div class="section-header">
+        <span class="section-label">Why Choose Us</span>
+        <h2>Project Highlights</h2>
+        <p>Experience unparalleled luxury in one of the region's most prestigious residential townships.</p>
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+            <div class="card-icon">🏛</div>
+            <h3>6 Premium Wings</h3>
+            <p>Luxury 3, 4 and 5 BHK residences crafted with meticulous attention to detail.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">🏠</div>
+            <h3>288 Flats</h3>
+            <p>12 floors per wing with premium layouts designed for modern family living.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">☀</div>
+            <h3>Solar Powered</h3>
+            <p>Eco-friendly common area operations powered by sustainable solar energy.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">✦</div>
+            <h3>World-Class Amenities</h3>
+            <p>Pool, Gym, Temple, Garden and more — everything you need at your doorstep.</p>
+        </div>
+
+    </div>
+
+</section>
+
+<section id="amenities" class="section-alt">
+
+    <div class="section-header">
+        <span class="section-label">Experience Excellence</span>
+        <h2>Luxury Amenities</h2>
+        <p>Discover the world-class facilities that make The SkyLine Township a cut above the rest.</p>
+    </div>
+
+    <div class="slider">
+
+        <div class="slider-frame">
+            <img id="sliderImage"
+                 src="/images/aerial.jpg"
+                 alt="Amenity">
+        </div>
+
+        <h3 id="sliderTitle">
+            The SkyLine Township
+        </h3>
+        <p class="slider-caption">A glimpse into premium township living</p>
+
+    </div>
+
+</section>
+
+<section class="section-dark">
+
+    <div class="section-header">
+        <span class="section-label">Explore More</span>
+        <h2>Quick Navigation</h2>
+        <p>Navigate through our township offerings and community resources.</p>
+    </div>
+
+    <div class="nav-buttons">
+
+        <button onclick="window.location.href='tour.html'">
+            Society Tour
+        </button>
+
+        <button class="btn-outline" onclick="window.location.href='amenities.html'">
+            Amenities & Utilities
+        </button>
+
+        <button class="btn-outline" onclick="window.location.href='rules.html'">
+            Society Rules
+        </button>
+
+    </div>
+
+</section>
+
+<footer>
+
+    <div class="footer-divider"></div>
+    <h3 class="footer-brand">The SkyLine Township</h3>
+    <p>
+        A Premium Residential Township Designed For Luxury Living.
+    </p>
+    <p class="footer-copy">&copy; 2026 The SkyLine Township. All Rights Reserved.</p>
+
+</footer>
+
+<script>
+
+    const images = [
+
+        {
+            src: "/images/aerial.jpg",
+            title: "The SkyLine Township"
+        },
+
+        {
+            src: "/images/pool.jpg",
+            title: "Indoor Swimming Pool"
+        },
+
+        {
+            src: "/images/gym.jpg",
+            title: "Modern Gymnasium"
+        },
+
+        {
+            src: "/images/temple.jpg",
+            title: "Society Temple"
+        },
+
+        {
+            src: "/images/garden.jpg",
+            title: "Landscaped Garden"
+        },
+
+        {
+            src: "/images/jogging.webp",
+            title: "Jogging Track"
+        }
+
+    ];
+
+    let current = 0;
+
+    setInterval(() => {
+
+        current = (current + 1) % images.length;
+
+        document.getElementById("sliderImage").src =
+            images[current].src;
+
+        document.getElementById("sliderTitle").innerText =
+            images[current].title;
+
+    }, 3000);
+
+    document.getElementById("navToggle").addEventListener("click", function () {
+        document.getElementById("navLinks").classList.toggle("open");
+    });
+
+    window.addEventListener("scroll", function () {
+        document.getElementById("navbar").classList.toggle("scrolled", window.scrollY > 50);
+    });
+
+</script>
+
+</body>
+</html>

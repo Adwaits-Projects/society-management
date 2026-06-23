@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The SkyLine Township - Amenities</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<nav class="navbar scrolled">
+    <a href="index.html" class="navbar-brand">
+        <span class="brand-name">The SkyLine Township</span>
+        <span class="brand-tagline">Luxury Living Redefined</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <ul class="navbar-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="tour.html">Tour</a></li>
+        <li><a href="amenities.html">Amenities</a></li>
+        <li><a href="rules.html">Rules</a></li>
+        <li><a href="login.html" class="navbar-cta">Login</a></li>
+    </ul>
+</nav>
+
+<div class="page-wrapper">
+
+    <div class="page-hero">
+        <h1>The SkyLine Township</h1>
+        <h2>Amenities & Infrastructure</h2>
+    </div>
+
+    <div class="page-content">
+
+        <div class="section-header" style="margin-bottom: 40px;">
+            <span class="section-label">World-Class Facilities</span>
+            <h2 style="font-size: 1.8rem;">Luxury Amenities Showcase</h2>
+            <p>Experience the premium lifestyle amenities available exclusively for our residents.</p>
+        </div>
+
+        <div class="amenities-showcase">
+
+            <div class="showcase-item">
+                <img src="/images/pool.jpg" alt="Indoor Swimming Pool">
+                <span class="showcase-label">Indoor Swimming Pool</span>
+            </div>
+
+            <div class="showcase-item">
+                <img src="/images/gym.jpg" alt="Modern Gymnasium">
+                <span class="showcase-label">Modern Gymnasium</span>
+            </div>
+
+            <div class="showcase-item">
+                <img src="/images/temple.jpg" alt="Society Temple">
+                <span class="showcase-label">Society Temple</span>
+            </div>
+
+            <div class="showcase-item">
+                <img src="/images/garden.jpg" alt="Landscaped Garden">
+                <span class="showcase-label">Landscaped Garden</span>
+            </div>
+
+            <div class="showcase-item">
+                <img src="/images/jogging.webp" alt="Jogging Track">
+                <span class="showcase-label">Jogging Track</span>
+            </div>
+
+            <div class="showcase-item">
+                <img src="/images/aerial.jpg" alt="The SkyLine Township">
+                <span class="showcase-label">The SkyLine Township</span>
+            </div>
+
+        </div>
+
+        <div class="section-header" style="margin-bottom: 32px;">
+            <span class="section-label">Full Directory</span>
+            <h2 style="font-size: 1.6rem;">Amenities Directory</h2>
+        </div>
+
+        <div class="table-wrapper">
+            <table cellpadding="10" cellspacing="0">
+
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Amenity Name</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+
+                <tbody id="amenityTable">
+
+                </tbody>
+
+            </table>
+        </div>
+
+        <div class="page-actions">
+            <button id="backBtn" onclick="window.location.href='index.html'">
+                Back to Home
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        const navLinks = document.getElementById("navLinks");
+        const backBtn = document.getElementById("backBtn");
+
+        if (loggedInUser) {
+            if (loggedInUser.role === "ADMIN") {
+                navLinks.innerHTML = `
+                    <li><a href="admin-dashboard.html">Dashboard</a></li>
+                    <li><a href="resident-management.html">Residents</a></li>
+                    <li><a href="visitor-management.html">Visitors</a></li>
+                    <li><a href="amenities.html">Amenities</a></li>
+                    <li><a href="login.html" class="navbar-cta">Logout</a></li>
+                `;
+                if (backBtn) {
+                    backBtn.setAttribute("onclick", "window.location.href='admin-dashboard.html'");
+                    backBtn.innerText = "Back to Dashboard";
+                }
+            } else if (loggedInUser.role === "RESIDENT") {
+                navLinks.innerHTML = `
+                    <li><a href="resident-dashboard.html">Dashboard</a></li>
+                    <li><a href="resident.html">My Flat</a></li>
+                    <li><a href="my-bills.html">My Bills</a></li>
+                    <li><a href="amenities.html">Amenities</a></li>
+                    <li><a href="rules.html">Rules</a></li>
+                    <li><a href="login.html" class="navbar-cta">Logout</a></li>
+                `;
+                if (backBtn) {
+                    backBtn.setAttribute("onclick", "window.location.href='resident-dashboard.html'");
+                    backBtn.innerText = "Back to Dashboard";
+                }
+            }
+        }
+    });
+
+    fetch("/api/amenities")
+        .then(response => response.json())
+        .then(data => {
+
+            let table = document.getElementById("amenityTable");
+
+            data.forEach(amenity => {
+
+                let row =
+
+                    `<tr>
+            <td>${amenity.amenityId}</td>
+            <td>${amenity.amenityName}</td>
+            <td>${amenity.location}</td>
+            <td>${amenity.status}</td>
+        </tr>`;
+
+                table.innerHTML += row;
+
+            });
+
+        });
+
+    document.getElementById("navToggle").addEventListener("click", function () {
+        document.getElementById("navLinks").classList.toggle("open");
+    });
+
+</script>
+
+</body>
+</html>

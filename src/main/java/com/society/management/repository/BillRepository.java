@@ -1,0 +1,11 @@
+package com.society.management.repository;
+
+import com.society.management.entity.Bill;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+
+public interface BillRepository extends JpaRepository<Bill, Integer> {
+
+    List<Bill> findByFlatId(Integer flatId);
+
+}

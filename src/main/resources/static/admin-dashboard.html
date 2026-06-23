@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<nav class="navbar scrolled">
+    <a href="index.html" class="navbar-brand">
+        <span class="brand-name">The SkyLine Township</span>
+        <span class="brand-tagline">Admin Portal</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <ul class="navbar-links" id="navLinks">
+        <li><a href="admin-dashboard.html">Dashboard</a></li>
+        <li><a href="resident-management.html">Residents</a></li>
+        <li><a href="visitor-management.html">Visitors</a></li>
+        <li><a href="amenities.html">Amenities</a></li>
+        <li><a href="login.html" class="navbar-cta">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="dashboard">
+
+    <div class="dashboard-panel">
+
+        <div class="dashboard-header">
+            <span class="section-label">Administration</span>
+            <h1>Admin Dashboard</h1>
+            <h2>Manage your township operations at a glance</h2>
+        </div>
+
+
+
+        <div class="admin-buttons">
+
+            <button onclick="window.location.href='resident-management.html'">
+                Resident Management
+            </button>
+
+            <button class="btn-secondary" onclick="window.location.href='visitor-management.html'">
+                Visitor Management
+            </button>
+
+            <button class="btn-secondary" onclick="window.location.href='amenities.html'">
+                Amenities
+            </button>
+
+            <button class="btn-secondary" onclick="window.location.href='tour.html'">
+                Society Tour
+            </button>
+
+            <button class="btn-ghost" onclick="window.location.href='login.html'">
+                Logout
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+
+
+    document.getElementById("navToggle").addEventListener("click", function () {
+        document.getElementById("navLinks").classList.toggle("open");
+    });
+
+</script>
+
+</body>
+</html>

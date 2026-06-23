@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Society Rules & Regulations — The SkyLine Township</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<nav class="navbar scrolled">
+    <a href="index.html" class="navbar-brand">
+        <span class="brand-name">The SkyLine Township</span>
+        <span class="brand-tagline">Luxury Living Redefined</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <ul class="navbar-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="tour.html">Tour</a></li>
+        <li><a href="amenities.html">Amenities</a></li>
+        <li><a href="rules.html">Rules</a></li>
+        <li><a href="login.html" class="navbar-cta">Login</a></li>
+    </ul>
+</nav>
+
+<div class="page-wrapper">
+
+    <div class="page-hero">
+        <h1>Society Rules & Regulations</h1>
+        <h2>Community Guidelines for Harmonious Living</h2>
+    </div>
+
+    <div class="page-content">
+
+        <div id="detailsCard">
+
+            <div class="rules-intro">
+                <p>
+                    At The SkyLine Township, we believe in fostering a respectful, safe, and harmonious community.
+                    Please review and adhere to the following guidelines to ensure a premium living experience for all residents.
+                </p>
+            </div>
+
+            <h3>Community Guidelines</h3>
+
+            <ol class="rules-list">
+
+                <li>No loud music or parties after 10:00 PM.</li>
+
+                <li>All visitors must register at the security gate before entry.</li>
+
+                <li>Keep society neat and clean.</li>
+
+                <li>Residents must park vehicles only in allotted parking spaces.</li>
+
+                <li>Speed limit inside the society premises is 20 km/h.</li>
+
+                <li>Pets must be kept on a leash in common areas.</li>
+
+                <li>Wet and dry waste must be segregated before disposal.</li>
+
+                <li>Swimming pool timings are from 6:00 AM to 9:00 PM.</li>
+
+                <li>Children below 12 years must be supervised in play areas.</li>
+
+                <li>Fire exits, staircases and emergency routes must remain unobstructed.</li>
+
+                <li>Clubhouse bookings require prior approval from management.</li>
+
+                <li>Damaging common property may result in penalties.</li>
+
+                <li>Any maintenance issue should be reported through the Resident Portal.</li>
+
+                <li>Construction or renovation work is permitted only during approved hours.</li>
+
+                <li>Water and electricity should be used responsibly.</li>
+
+                <li>Residents must comply with local municipal and housing society regulations.</li>
+
+            </ol>
+
+            <div class="page-actions">
+                <button id="backBtn" onclick="window.location.href='index.html'">
+                    Back to Home
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        const navLinks = document.getElementById("navLinks");
+        const backBtn = document.getElementById("backBtn");
+
+        if (loggedInUser) {
+            if (loggedInUser.role === "ADMIN") {
+                navLinks.innerHTML = `
+                    <li><a href="admin-dashboard.html">Dashboard</a></li>
+                    <li><a href="resident-management.html">Residents</a></li>
+                    <li><a href="visitor-management.html">Visitors</a></li>
+                    <li><a href="amenities.html">Amenities</a></li>
+                    <li><a href="login.html" class="navbar-cta">Logout</a></li>
+                `;
+                if (backBtn) {
+                    backBtn.setAttribute("onclick", "window.location.href='admin-dashboard.html'");
+                    backBtn.innerText = "Back to Dashboard";
+                }
+            } else if (loggedInUser.role === "RESIDENT") {
+                navLinks.innerHTML = `
+                    <li><a href="resident-dashboard.html">Dashboard</a></li>
+                    <li><a href="resident.html">My Flat</a></li>
+                    <li><a href="my-bills.html">My Bills</a></li>
+                    <li><a href="amenities.html">Amenities</a></li>
+                    <li><a href="rules.html">Rules</a></li>
+                    <li><a href="login.html" class="navbar-cta">Logout</a></li>
+                `;
+                if (backBtn) {
+                    backBtn.setAttribute("onclick", "window.location.href='resident-dashboard.html'");
+                    backBtn.innerText = "Back to Dashboard";
+                }
+            }
+        }
+    });
+
+    document.getElementById("navToggle").addEventListener("click", function () {
+        document.getElementById("navLinks").classList.toggle("open");
+    });
+</script>
+
+</body>
+</html>

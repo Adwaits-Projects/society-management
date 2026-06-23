@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The SkyLine Township - Resident Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<nav class="navbar scrolled">
+    <a href="index.html" class="navbar-brand">
+        <span class="brand-name">The SkyLine Township</span>
+        <span class="brand-tagline">Resident Portal</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <ul class="navbar-links" id="navLinks">
+        <li><a href="resident-dashboard.html">Dashboard</a></li>
+        <li><a href="resident.html">My Flat</a></li>
+        <li><a href="amenities.html">Amenities</a></li>
+        <li><a href="login.html" class="navbar-cta">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="page-wrapper">
+
+    <div class="page-hero">
+        <h1>The SkyLine Township</h1>
+        <h2>Resident Portal — Flat Lookup & Billing Details</h2>
+    </div>
+
+    <div class="page-content">
+
+        <div id="detailsCard">
+
+            <h2>Resident Portal</h2>
+
+            <div id="selectionFields" style="display: none;">
+                <label for="wing">Wing</label>
+                <select id="wing">
+                    <option>Select Wing</option>
+                </select>
+
+                <label for="floor">Floor</label>
+                <select id="floor">
+                    <option>Select Floor</option>
+                </select>
+
+                <label for="flat">Flat</label>
+                <select id="flat">
+                    <option>Select Flat</option>
+                </select>
+
+                <div class="form-actions">
+                    <button onclick="getDetails()">Get Details</button>
+                </div>
+            </div>
+
+            <hr id="selectionDivider">
+
+            <div id="flatDetails" style="display:none;">
+
+                <h3>Flat Details</h3>
+
+                <p><b>Owner Name:</b> <span id="ownerName"></span></p>
+
+                <p><b>Contact Number:</b> <span id="contactNum"></span></p>
+
+                <p><b>Electricity Usage:</b>
+                    <span id="electricityUsage"></span> Units
+                </p>
+
+                <p><b>Electricity Bill:</b>
+                    Rs.<span id="electricityBill"></span>
+                </p>
+
+                <p><b>Water Usage:</b>
+                    <span id="waterUsage"></span> Litres
+                </p>
+
+                <p><b>Water Bill:</b>
+                    Rs.<span id="waterBill"></span>
+                </p>
+
+                <p><b>Maintenance Fee:</b>
+                    Rs.<span id="maintenanceFee"></span>
+                </p>
+
+                <p><b>Property Tax:</b>
+                    Rs.<span id="propertyTax"></span>
+                </p>
+
+                <p><b>Pending Amount:</b>
+                    Rs.<span id="pendingAmount"></span>
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    let wingDropdown = document.getElementById("wing");
+    let floorDropdown = document.getElementById("floor");
+    let flatDropdown = document.getElementById("flat");
+
+    document.addEventListener("DOMContentLoaded", function () {
+        let loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (!loggedInUser) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        // 1. Setup Navbar Dynamically
+        const navLinks = document.getElementById("navLinks");
+        if (loggedInUser.role === "ADMIN") {
+            navLinks.innerHTML = `
+                <li><a href="admin-dashboard.html">Dashboard</a></li>
+                <li><a href="resident-management.html">Residents</a></li>
+                <li><a href="visitor-management.html">Visitors</a></li>
+                <li><a href="amenities.html">Amenities</a></li>
+                <li><a href="login.html" class="navbar-cta">Logout</a></li>
+            `;
+            // Show selection form
+            document.getElementById("selectionFields").style.display = "block";
+            initDropdowns();
+        } else if (loggedInUser.role === "RESIDENT") {
+            navLinks.innerHTML = `
+                <li><a href="resident-dashboard.html">Dashboard</a></li>
+                <li><a href="resident.html">My Flat</a></li>
+                <li><a href="my-bills.html">My Bills</a></li>
+                <li><a href="amenities.html">Amenities</a></li>
+                <li><a href="rules.html">Rules</a></li>
+                <li><a href="login.html" class="navbar-cta">Logout</a></li>
+            `;
+            // Hide selection form
+            document.getElementById("selectionFields").style.display = "none";
+            document.getElementById("selectionDivider").style.display = "none";
+
+            // Automatically load resident's own flat details
+            fetch("/api/flat/resident/" + loggedInUser.residentId, {
+                headers: {
+                    "X-User-Role": loggedInUser.role,
+                    "X-User-Resident-Id": loggedInUser.residentId
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        displayDetails(data[0]);
+                    } else {
+                        document.getElementById("flatDetails").style.display = "block";
+                        document.getElementById("flatDetails").innerHTML = "<h3>No allotted flat found for this resident account.</h3>";
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Failed to load resident details.");
+                });
+        }
+    });
+
+    function initDropdowns() {
+        fetch("/api/wings")
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(wing => {
+                    let option = document.createElement("option");
+                    option.value = wing.wingId;
+                    option.text = wing.wingName;
+                    wingDropdown.appendChild(option);
+                });
+            });
+
+        wingDropdown.addEventListener("change", function () {
+            let wingId = this.value;
+            floorDropdown.innerHTML = "<option>Select Floor</option>";
+            flatDropdown.innerHTML = "<option>Select Flat</option>";
+            if (!wingId || wingId === "Select Wing") return;
+
+            fetch("/api/floors/" + wingId)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(floor => {
+                        let option = document.createElement("option");
+                        option.value = floor.floorId;
+                        option.text = floor.floorNum;
+                        floorDropdown.appendChild(option);
+                    });
+                });
+        });
+
+        floorDropdown.addEventListener("change", function () {
+            let floorId = this.value;
+            flatDropdown.innerHTML = "<option>Select Flat</option>";
+            if (!floorId || floorId === "Select Floor") return;
+
+            fetch("/api/flats/" + floorId)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(flat => {
+                        let option = document.createElement("option");
+                        option.value = flat.flatNum;
+                        option.text = flat.flatNum;
+                        flatDropdown.appendChild(option);
+                    });
+                });
+        });
+    }
+
+    function getDetails() {
+        let flatNum = flatDropdown.value;
+        if (!flatNum || flatNum === "Select Flat") {
+            alert("Please select a flat.");
+            return;
+        }
+
+        let loggedInUser = JSON.parse(localStorage.getItem("loggedInUser")) || {};
+
+        fetch("/api/flat/" + flatNum, {
+            headers: {
+                "X-User-Role": loggedInUser.role || "",
+                "X-User-Resident-Id": loggedInUser.residentId || ""
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    displayDetails(data[0]);
+                } else {
+                    alert("No details found for flat: " + flatNum);
+                }
+            });
+    }
+
+    function displayDetails(details) {
+        document.getElementById("flatDetails").style.display = "block";
+        document.getElementById("ownerName").innerText = details.owner_name || '—';
+        document.getElementById("contactNum").innerText = details.contact_num || '—';
+
+        document.getElementById("electricityUsage").innerText =
+            (details.electricity_usage !== null && details.electricity_usage !== undefined) ? details.electricity_usage : '0';
+        document.getElementById("electricityBill").innerText =
+            (details.electricity_bill_amt !== null && details.electricity_bill_amt !== undefined) ? details.electricity_bill_amt : '0';
+        document.getElementById("waterUsage").innerText =
+            (details.water_usage !== null && details.water_usage !== undefined) ? details.water_usage : '0';
+        document.getElementById("waterBill").innerText =
+            (details.water_bill_amt !== null && details.water_bill_amt !== undefined) ? details.water_bill_amt : '0';
+        document.getElementById("maintenanceFee").innerText =
+            (details.maintenance_fee !== null && details.maintenance_fee !== undefined) ? details.maintenance_fee : '0';
+        document.getElementById("propertyTax").innerText =
+            (details.property_tax !== null && details.property_tax !== undefined) ? details.property_tax : '0';
+        document.getElementById("pendingAmount").innerText =
+            (details.pending_amt !== null && details.pending_amt !== undefined) ? details.pending_amt : '0';
+    }
+
+    document.getElementById("navToggle").addEventListener("click", function () {
+        document.getElementById("navLinks").classList.toggle("open");
+    });
+</script>
+
+</body>
+</html>

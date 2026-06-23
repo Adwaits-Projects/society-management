@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Bill</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>Add Bill</h1>
+
+<input type="number" id="flatId" placeholder="Flat ID"><br><br>
+
+<input type="text" id="billMonth" placeholder="Bill Month"><br><br>
+
+<input type="number" step="0.01" id="electricityBill" placeholder="Electricity Bill"><br><br>
+
+<input type="number" step="0.01" id="waterBill" placeholder="Water Bill"><br><br>
+
+<input type="number" step="0.01" id="maintenanceFee" placeholder="Maintenance Fee"><br><br>
+
+<input type="number" step="0.01" id="propertyTax" placeholder="Property Tax"><br><br>
+
+<input type="number" step="0.01" id="lateFee" placeholder="Late Fee"><br><br>
+
+<input type="text" id="paymentStatus" placeholder="PAID / PENDING"><br><br>
+
+<button onclick="saveBill()">Save Bill</button>
+
+<script>
+
+    function saveBill() {
+
+        let bill = {
+
+            flatId: document.getElementById("flatId").value,
+
+            billMonth: document.getElementById("billMonth").value,
+
+            electricityBill: document.getElementById("electricityBill").value,
+
+            waterBill: document.getElementById("waterBill").value,
+
+            maintenanceFee: document.getElementById("maintenanceFee").value,
+
+            propertyTax: document.getElementById("propertyTax").value,
+
+            lateFee: document.getElementById("lateFee").value,
+
+            totalAmount:
+                parseFloat(document.getElementById("electricityBill").value) +
+                parseFloat(document.getElementById("waterBill").value) +
+                parseFloat(document.getElementById("maintenanceFee").value) +
+                parseFloat(document.getElementById("propertyTax").value) +
+                parseFloat(document.getElementById("lateFee").value),
+
+            paymentStatus:
+            document.getElementById("paymentStatus").value
+        };
+
+        fetch("/api/bills", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(bill)
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert("Bill Saved Successfully");
+            });
+
+    }
+
+</script>
+
+</body>
+</html>

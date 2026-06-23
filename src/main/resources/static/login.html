@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyLine Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <div class="login-card">
+
+        <div class="login-accent-line"></div>
+        <h1>THE SKYLINE TOWNSHIP</h1>
+        <h3>Resident & Admin Login</h3>
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email"
+                   id="email"
+                   placeholder="Enter your email address">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password"
+                   id="password"
+                   placeholder="Enter your password">
+        </div>
+
+        <button onclick="login()">
+            Sign In
+        </button>
+
+        <a href="index.html" class="login-back">&larr; Back to Home</a>
+
+    </div>
+
+</div>
+
+<script>
+    localStorage.removeItem("loggedInUser");
+
+    function login() {
+
+        let user = {
+
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value
+
+        };
+
+        fetch("/api/login", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(user)
+
+        })
+
+            .then(response => response.text())
+
+            .then(data => {
+
+                if(data === "INVALID_LOGIN") {
+
+                    alert("Invalid Email or Password");
+                    return;
+                }
+
+                let loggedInUser = JSON.parse(data);
+
+                localStorage.setItem(
+                    "loggedInUser",
+                    JSON.stringify(loggedInUser)
+                );
+
+                if(loggedInUser.role === "ADMIN") {
+
+                    window.location.href = "admin-dashboard.html";
+
+                }
+                else if(loggedInUser.role === "RESIDENT") {
+
+                    window.location.href = "resident-dashboard.html";
+
+                }
+                else {
+
+                    alert("Invalid User Role");
+                }
+
+            })
+
+            .catch(error => {
+
+                console.error(error);
+                alert("Login Failed");
+
+            });
+    }
+
+</script>
+
+
+</body>
+
+</html>

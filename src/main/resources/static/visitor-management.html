@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Management — The SkyLine Township</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<nav class="navbar scrolled">
+    <a href="index.html" class="navbar-brand">
+        <span class="brand-name">The SkyLine Township</span>
+        <span class="brand-tagline">Admin Portal</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <ul class="navbar-links" id="navLinks">
+        <li><a href="admin-dashboard.html">Dashboard</a></li>
+        <li><a href="resident-management.html">Residents</a></li>
+        <li><a href="visitor-management.html">Visitors</a></li>
+        <li><a href="amenities.html">Amenities</a></li>
+        <li><a href="login.html" class="navbar-cta">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="page-wrapper">
+
+    <div class="page-hero">
+        <h1>Visitor Management</h1>
+        <h2>Monitor and track all visitor entries across the township</h2>
+    </div>
+
+    <div class="page-content">
+
+        <div class="page-toolbar">
+            <div>
+                <span class="section-label">Security</span>
+                <h2 style="font-size:1.5rem;color:var(--color-primary);">Visitor Log</h2>
+            </div>
+            <p class="record-count">Total: <strong id="visitorCount">0</strong> visitors</p>
+        </div>
+
+        <div id="loadingState" class="data-loading">Loading visitors...</div>
+        <div id="errorState" class="data-error" style="display:none;"></div>
+        <div id="emptyState" class="data-empty" style="display:none;">No visitors found.</div>
+
+        <div class="table-wrapper" id="tableWrapper" style="display:none;">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Visitor Name</th>
+                    <th>Mobile</th>
+                    <th>Flat ID</th>
+                    <th>Purpose</th>
+                    <th>Entry Time</th>
+                    <th>Exit Time</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody id="visitorTable"></tbody>
+            </table>
+        </div>
+
+        <div class="page-actions">
+            <button class="btn-ghost" onclick="window.location.href='admin-dashboard.html'">
+                Back to Dashboard
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    function formatDateTime(value) {
+        if (!value) return '—';
+        return String(value).replace('T', ' ').substring(0, 16);
+    }
+
+    function getStatusClass(status) {
+        if (!status) return 'status-default';
+        const normalized = status.toUpperCase();
+        if (normalized === 'INSIDE' || normalized === 'ACTIVE') return 'status-active';
+        if (normalized === 'EXITED' || normalized === 'COMPLETED') return 'status-exited';
+        if (normalized === 'PENDING') return 'status-pending';
+        return 'status-default';
+    }
+
+    function renderVisitors(visitors) {
+        const table = document.getElementById('visitorTable');
+        table.innerHTML = '';
+
+        visitors.forEach(function (visitor) {
+            const statusClass = getStatusClass(visitor.status);
+
+            table.innerHTML +=
+                '<tr>' +
+                '<td>' + visitor.visitorId + '</td>' +
+                '<td>' + visitor.visitorName + '</td>' +
+                '<td>' + visitor.mobileNumber + '</td>' +
+                '<td>' + visitor.flatId + '</td>' +
+                '<td>' + visitor.purpose + '</td>' +
+                '<td>' + formatDateTime(visitor.entryTime) + '</td>' +
+                '<td>' + formatDateTime(visitor.exitTime) + '</td>' +
+                '<td><span class="status-badge ' + statusClass + '">' + (visitor.status || '—') + '</span></td>' +
+                '</tr>';
+        });
+
+        document.getElementById('visitorCount').innerText = visitors.length;
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'none';
+
+        if (visitors.length === 0) {
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('tableWrapper').style.display = 'none';
+        } else {
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('tableWrapper').style.display = 'block';
+        }
+    }
+
+    fetch('/api/visitors')
+        .then(function (response) {
+            if (!response.ok) throw new Error('Failed to fetch visitors');
+            return response.json();
+        })
+        .then(function (data) {
+            renderVisitors(data);
+        })
+        .catch(function () {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            document.getElementById('errorState').innerText = 'Unable to load visitors. Please try again later.';
+        });
+
+    document.getElementById('navToggle').addEventListener('click', function () {
+        document.getElementById('navLinks').classList.toggle('open');
+    });
+
+</script>
+
+</body>
+</html>

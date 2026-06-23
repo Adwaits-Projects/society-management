@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resident Management — The SkyLine Township</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .filter-section {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            background: var(--color-surface);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(201, 169, 98, 0.1);
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--color-text-muted);
+            margin-bottom: 8px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid rgba(201, 169, 98, 0.25);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            background: var(--color-bg);
+            color: var(--color-text);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--color-accent);
+        }
+
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 15, 26, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(201, 169, 98, 0.2);
+            position: relative;
+        }
+
+        .modal-card h2 {
+            font-size: 1.5rem;
+            color: var(--color-primary);
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(201, 169, 98, 0.15);
+            padding-bottom: 12px;
+        }
+
+        .modal-card .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .modal-card label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .modal-card input, .modal-card select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(201, 169, 98, 0.25);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        .modal-card input:focus, .modal-card select:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            background: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar scrolled">
+    <a href="index.html" class="navbar-brand">
+        <span class="brand-name">The SkyLine Township</span>
+        <span class="brand-tagline">Admin Portal</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <ul class="navbar-links" id="navLinks">
+        <li><a href="admin-dashboard.html">Dashboard</a></li>
+        <li><a href="resident-management.html">Residents</a></li>
+        <li><a href="visitor-management.html">Visitors</a></li>
+        <li><a href="amenities.html">Amenities</a></li>
+        <li><a href="login.html" class="navbar-cta">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="page-wrapper">
+
+    <div class="page-hero">
+        <h1>Resident Management</h1>
+        <h2>View and manage all registered township residents</h2>
+    </div>
+
+    <div class="page-content">
+
+        <div class="page-toolbar">
+            <div>
+                <span class="section-label">Administration</span>
+                <h2 style="font-size:1.5rem;color:var(--color-primary);">All Residents</h2>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <button onclick="showAddModal()" style="padding: 10px 20px; font-size: 0.85rem;">+ Add Resident</button>
+                <p class="record-count">Total: <strong id="residentCount">0</strong> residents</p>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filter-section">
+            <div class="filter-group">
+                <label for="filterWing">Wing</label>
+                <select id="filterWing" onchange="onWingChange()">
+                    <option value="">All Wings</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filterFloor">Floor</label>
+                <select id="filterFloor" onchange="onFloorChange()">
+                    <option value="">All Floors</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filterFlat">Flat</label>
+                <select id="filterFlat" onchange="applyFilters()">
+                    <option value="">All Flats</option>
+                </select>
+            </div>
+            <div style="display: flex; align-items: flex-end;">
+                <button class="btn-secondary" onclick="clearFilters()" style="padding: 10px 20px; font-size: 0.85rem;">Clear</button>
+            </div>
+        </div>
+
+        <div id="loadingState" class="data-loading">Loading residents...</div>
+        <div id="errorState" class="data-error" style="display:none;"></div>
+        <div id="emptyState" class="data-empty" style="display:none;">No residents found.</div>
+
+        <div class="table-wrapper" id="tableWrapper" style="display:none;">
+            <table>
+                <thead>
+                <tr>
+                    <th>Owner Name</th>
+                    <th>Contact Number</th>
+                    <th>Flat</th>
+                    <th>Pending Amount</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="residentTable"></tbody>
+            </table>
+        </div>
+
+        <div class="page-actions">
+            <button class="btn-secondary" onclick="window.location.href='resident.html'">
+                Flat Lookup Portal
+            </button>
+            <button class="btn-ghost" onclick="window.location.href='admin-dashboard.html'">
+                Back to Dashboard
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Modal Dialog -->
+<div id="residentModal" class="modal-backdrop">
+    <div class="modal-card">
+        <h2 id="modalTitle">Add Resident</h2>
+
+        <input type="hidden" id="modalResidentId">
+
+        <div class="form-group">
+            <label for="modalOwnerName">Owner Name</label>
+            <input type="text" id="modalOwnerName" placeholder="Enter full name">
+        </div>
+
+        <div class="form-group">
+            <label for="modalContactNum">Contact Number</label>
+            <input type="text" id="modalContactNum" placeholder="Enter contact number">
+        </div>
+
+        <div class="form-group">
+            <label for="modalEmail">Email (For Login)</label>
+            <input type="email" id="modalEmail" placeholder="Enter email address">
+        </div>
+
+        <div class="form-group" id="passwordGroup">
+            <label for="modalPassword">Password</label>
+            <input type="password" id="modalPassword" placeholder="Enter login password">
+        </div>
+
+        <div class="form-group">
+            <label for="modalFlatSelect">Allotted Flat</label>
+            <select id="modalFlatSelect">
+                <option value="">Select Flat</option>
+            </select>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+            <button class="btn-ghost" onclick="closeModal()" style="padding: 10px 20px; font-size: 0.85rem;">Cancel</button>
+            <button onclick="saveResident()" style="padding: 10px 20px; font-size: 0.85rem;">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (!loggedInUser || loggedInUser.role !== "ADMIN") {
+        window.location.href = "login.html";
+    }
+
+    let allResidents = [];
+    let allFlats = [];
+    let wings = [];
+
+    const wingFilter = document.getElementById("filterWing");
+    const floorFilter = document.getElementById("filterFloor");
+    const flatFilter = document.getElementById("filterFlat");
+
+    function formatCurrency(value) {
+        if (value === null || value === undefined || value === '—') return '—';
+        return '₹' + Number(value).toLocaleString('en-IN');
+    }
+
+    // Load initial metadata and lists
+    document.addEventListener("DOMContentLoaded", function () {
+        loadFlats();
+        loadWings();
+        loadResidents();
+    });
+
+    function loadFlats() {
+        fetch("/api/flats")
+            .then(res => res.json())
+            .then(data => {
+                allFlats = data;
+                // Populate modal flat dropdown
+                const select = document.getElementById("modalFlatSelect");
+                select.innerHTML = '<option value="">Select Flat</option>';
+                data.forEach(flat => {
+                    const opt = document.createElement("option");
+                    opt.value = flat.flatId;
+                    opt.text = flat.flatNum;
+                    select.appendChild(opt);
+                });
+            });
+    }
+
+    function loadWings() {
+        fetch("/api/wings")
+            .then(res => res.json())
+            .then(data => {
+                wings = data;
+                wingFilter.innerHTML = '<option value="">All Wings</option>';
+                data.forEach(w => {
+                    const opt = document.createElement("option");
+                    opt.value = w.wingId;
+                    opt.text = w.wingName;
+                    wingFilter.appendChild(opt);
+                });
+            });
+    }
+
+    function onWingChange() {
+        const wingId = wingFilter.value;
+        floorFilter.innerHTML = '<option value="">All Floors</option>';
+        flatFilter.innerHTML = '<option value="">All Flats</option>';
+
+        if (!wingId) {
+            applyFilters();
+            return;
+        }
+
+        fetch("/api/floors/" + wingId)
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(f => {
+                    const opt = document.createElement("option");
+                    opt.value = f.floorId;
+                    opt.text = f.floorNum;
+                    floorFilter.appendChild(opt);
+                });
+                applyFilters();
+            });
+    }
+
+    function onFloorChange() {
+        const floorId = floorFilter.value;
+        flatFilter.innerHTML = '<option value="">All Flats</option>';
+
+        if (!floorId) {
+            applyFilters();
+            return;
+        }
+
+        fetch("/api/flats/" + floorId)
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(f => {
+                    const opt = document.createElement("option");
+                    opt.value = f.flatId;
+                    opt.text = f.flatNum;
+                    flatFilter.appendChild(opt);
+                });
+                applyFilters();
+            });
+    }
+
+    function applyFilters() {
+        let filtered = allResidents;
+
+        if (wingFilter.value) {
+            const wingName = wingFilter.options[wingFilter.selectedIndex].text;
+            filtered = filtered.filter(r => r.wingName === wingName);
+        }
+
+        if (floorFilter.value) {
+            const floorNum = parseInt(floorFilter.options[floorFilter.selectedIndex].text);
+            filtered = filtered.filter(r => r.floorNum === floorNum);
+        }
+
+        if (flatFilter.value) {
+            const flatNum = flatFilter.options[flatFilter.selectedIndex].text;
+            filtered = filtered.filter(r => r.flat === flatNum);
+        }
+
+        renderResidents(filtered);
+    }
+
+    function clearFilters() {
+        wingFilter.value = "";
+        floorFilter.innerHTML = '<option value="">All Floors</option>';
+        flatFilter.innerHTML = '<option value="">All Flats</option>';
+        renderResidents(allResidents);
+    }
+
+    function loadResidents() {
+        document.getElementById('loadingState').style.display = 'block';
+        document.getElementById('tableWrapper').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'none';
+
+        fetch('/api/residents', {
+            headers: {
+                "X-User-Role": loggedInUser.role,
+                "X-User-Resident-Id": loggedInUser.residentId || ""
+            }
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Failed to load");
+                return res.json();
+            })
+            .then(data => {
+                allResidents = data;
+                renderResidents(data);
+            })
+            .catch(() => {
+                showError('Unable to load residents. Please try again later.');
+            });
+    }
+
+    function renderResidents(rows) {
+        const table = document.getElementById('residentTable');
+        table.innerHTML = '';
+
+        rows.forEach(function (row) {
+            const rowDataStr = JSON.stringify(row).replace(/"/g, '&quot;');
+            table.innerHTML +=
+                '<tr>' +
+                '<td>' + row.ownerName + '</td>' +
+                '<td>' + row.contactNum + '</td>' +
+                '<td>' + row.flat + '</td>' +
+                '<td>' + formatCurrency(row.pendingAmt) + '</td>' +
+                '<td>' +
+                '<button class="btn-ghost" onclick="showEditModal(' + rowDataStr + ')" style="padding: 6px 12px; font-size: 0.75rem; margin-right: 8px;">Edit</button>' +
+                '<button class="btn-secondary" onclick="deleteResident(' + row.id + ')" style="padding: 6px 12px; font-size: 0.75rem; background: #b91c1c; border-color: #b91c1c; color:#fff;">Delete</button>' +
+                '</td>' +
+                '</tr>';
+        });
+
+        document.getElementById('residentCount').innerText = rows.length;
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'none';
+
+        if (rows.length === 0) {
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('tableWrapper').style.display = 'none';
+        } else {
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('tableWrapper').style.display = 'block';
+        }
+    }
+
+    function showError(message) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('tableWrapper').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'block';
+        document.getElementById('errorState').innerText = message;
+    }
+
+    // Modal Handling
+    const modal = document.getElementById("residentModal");
+
+    function showAddModal() {
+        document.getElementById("modalTitle").innerText = "Add Resident";
+        document.getElementById("modalResidentId").value = "";
+        document.getElementById("modalOwnerName").value = "";
+        document.getElementById("modalContactNum").value = "";
+        document.getElementById("modalEmail").value = "";
+        document.getElementById("modalPassword").value = "";
+        document.getElementById("modalFlatSelect").value = "";
+        document.getElementById("passwordGroup").style.display = "block";
+        modal.style.display = "flex";
+    }
+
+    function showEditModal(res) {
+        document.getElementById("modalTitle").innerText = "Edit Resident";
+        document.getElementById("modalResidentId").value = res.id;
+        document.getElementById("modalOwnerName").value = res.ownerName;
+        document.getElementById("modalContactNum").value = res.contactNum;
+        document.getElementById("modalEmail").value = res.email || "";
+        document.getElementById("modalPassword").value = res.password || "";
+
+        // Match flat ID
+        const flatObj = allFlats.find(f => f.flatNum === res.flat);
+        document.getElementById("modalFlatSelect").value = flatObj ? flatObj.flatId : "";
+
+        // Hide password section for edit, or let them update it
+        document.getElementById("passwordGroup").style.display = "block";
+        modal.style.display = "flex";
+    }
+
+    function closeModal() {
+        modal.style.display = "none";
+    }
+
+    function saveResident() {
+        const id = document.getElementById("modalResidentId").value;
+        const ownerName = document.getElementById("modalOwnerName").value;
+        const contactNum = document.getElementById("modalContactNum").value;
+        const email = document.getElementById("modalEmail").value;
+        const password = document.getElementById("modalPassword").value;
+        const flatId = document.getElementById("modalFlatSelect").value;
+
+        if (!ownerName || !contactNum || !flatId) {
+            alert("Name, Contact, and Flat allotment are required.");
+            return;
+        }
+
+        const payload = { ownerName, contactNum, email, password, flatId };
+        const url = id ? `/api/residents/${id}` : "/api/residents";
+        const method = id ? "PUT" : "POST";
+
+        fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "X-User-Role": loggedInUser.role,
+                "X-User-Resident-Id": loggedInUser.residentId || ""
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Resident details saved successfully.");
+                    closeModal();
+                    loadResidents();
+                } else {
+                    alert("Error saving resident.");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Connection error while saving.");
+            });
+    }
+
+    function deleteResident(id) {
+        if (!confirm("Are you sure you want to delete this resident and their user account?")) return;
+
+        fetch(`/api/residents/${id}`, {
+            method: "DELETE",
+            headers: {
+                "X-User-Role": loggedInUser.role,
+                "X-User-Resident-Id": loggedInUser.residentId || ""
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Resident deleted successfully.");
+                    loadResidents();
+                } else {
+                    alert("Error deleting resident.");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Connection error while deleting.");
+            });
+    }
+
+    document.getElementById('navToggle').addEventListener('click', function () {
+        document.getElementById('navLinks').classList.toggle('open');
+    });
+</script>
+
+</body>
+</html>

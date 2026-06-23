@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bills — The SkyLine Township</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<nav class="navbar scrolled">
+    <a href="index.html" class="navbar-brand">
+        <span class="brand-name">The SkyLine Township</span>
+        <span class="brand-tagline">Resident Portal</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <ul class="navbar-links" id="navLinks">
+        <li><a href="resident-dashboard.html">Dashboard</a></li>
+        <li><a href="resident.html">My Flat</a></li>
+        <li><a href="my-bills.html">My Bills</a></li>
+        <li><a href="amenities.html">Amenities</a></li>
+        <li><a href="rules.html">Rules</a></li>
+        <li><a href="login.html" class="navbar-cta">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="page-wrapper">
+
+    <div class="page-hero">
+        <h1>My Bills</h1>
+        <h2>View your maintenance, utility and property tax statements</h2>
+    </div>
+
+    <div class="page-content">
+
+        <div class="page-toolbar">
+            <div>
+                <span class="section-label">Billing</span>
+                <h2 style="font-size:1.5rem;color:var(--color-primary);">Bill Statements</h2>
+            </div>
+            <p class="record-count">Total: <strong id="billCount">0</strong> bills</p>
+        </div>
+
+        <div id="loadingState" class="data-loading">Loading bills...</div>
+        <div id="errorState" class="data-error" style="display:none;"></div>
+        <div id="emptyState" class="data-empty" style="display:none;">No bills found.</div>
+
+        <div class="bill-cards" id="billCards"></div>
+
+        <div class="page-actions">
+            <button class="btn-ghost" onclick="window.location.href='resident-dashboard.html'">
+                Back to Dashboard
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    function formatCurrency(value) {
+        if (value === null || value === undefined) return '₹0';
+        return '₹' + Number(value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatDate(value) {
+        if (!value) return '—';
+        return value;
+    }
+
+    function getStatusClass(status) {
+        if (!status) return 'status-default';
+        const normalized = status.toUpperCase();
+        if (normalized === 'PAID') return 'status-paid';
+        if (normalized === 'PENDING') return 'status-pending';
+        if (normalized === 'OVERDUE') return 'status-overdue';
+        return 'status-default';
+    }
+
+    function renderBills(bills) {
+        const container = document.getElementById('billCards');
+        container.innerHTML = '';
+
+        bills.forEach(function (bill) {
+            const statusClass = getStatusClass(bill.paymentStatus);
+
+            container.innerHTML +=
+                '<div class="bill-card">' +
+                    '<div class="bill-card-header">' +
+                        '<h3>' + (bill.billMonth || 'Bill Statement') + '</h3>' +
+                        '<span>Flat ID: ' + (bill.flatId || '—') + '</span>' +
+                    '</div>' +
+                    '<div class="bill-card-body">' +
+                        '<div class="bill-row"><span class="label">Electricity</span><span class="value">' + formatCurrency(bill.electricityBill) + '</span></div>' +
+                        '<div class="bill-row"><span class="label">Water</span><span class="value">' + formatCurrency(bill.waterBill) + '</span></div>' +
+                        '<div class="bill-row"><span class="label">Maintenance</span><span class="value">' + formatCurrency(bill.maintenanceFee) + '</span></div>' +
+                        '<div class="bill-row"><span class="label">Property Tax</span><span class="value">' + formatCurrency(bill.propertyTax) + '</span></div>' +
+                        '<div class="bill-row"><span class="label">Late Fee</span><span class="value">' + formatCurrency(bill.lateFee) + '</span></div>' +
+                        '<div class="bill-row"><span class="label">Due Date</span><span class="value">' + formatDate(bill.dueDate) + '</span></div>' +
+                        '<div class="bill-row"><span class="label">Generated On</span><span class="value">' + formatDate(bill.generatedOn) + '</span></div>' +
+                    '</div>' +
+                    '<div class="bill-card-footer">' +
+                        '<div class="bill-total">' +
+                            '<small>Total Amount</small>' +
+                            formatCurrency(bill.totalAmount) +
+                        '</div>' +
+                        '<span class="status-badge ' + statusClass + '">' + (bill.paymentStatus || 'Unknown') + '</span>' +
+                    '</div>' +
+                '</div>';
+        });
+
+        document.getElementById('billCount').innerText = bills.length;
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'none';
+
+        if (bills.length === 0) {
+            document.getElementById('emptyState').style.display = 'block';
+        } else {
+            document.getElementById('emptyState').style.display = 'none';
+        }
+    }
+
+    fetch('/api/bills')
+        .then(function (response) {
+            if (!response.ok) throw new Error('Failed to fetch bills');
+            return response.json();
+        })
+        .then(function (data) {
+            renderBills(data);
+        })
+        .catch(function () {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            document.getElementById('errorState').innerText = 'Unable to load bills. Please try again later.';
+        });
+
+    document.getElementById('navToggle').addEventListener('click', function () {
+        document.getElementById('navLinks').classList.toggle('open');
+    });
+
+</script>
+
+</body>
+</html>
